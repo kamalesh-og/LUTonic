@@ -1,0 +1,11 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Generate LLVM IR",
+        "type": "shell",
+        "command": "clang -S -emit-llvm matmul.cpp -o matmul.ll",
+        "group": "build"
+      }
+    ]
+  }

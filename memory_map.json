@@ -1,0 +1,21 @@
+{
+  "matrix_size": "dynamic",
+  "banks": {
+      "A": {
+          "bank_id": 0,
+          "base_row": "0x000",
+          "addressing": "row_major"
+      },
+      "B": {
+          "bank_id": 1,
+          "base_row": "0x080", 
+          "addressing": "column_major"
+      },
+      "C": {
+          "bank_id": 2,
+          "base_row": "0x100",
+          "addressing": "row_major"
+      }
+  },
+    "note": "All addresses are 9-bit (0x000-0x1FF). Base rows spaced 128 apart (0x080) to avoid overlap."
+  }

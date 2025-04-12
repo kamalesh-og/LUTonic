@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIM Compiler</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #9c6ade;
+            --primary-dark: #7e4ec1;
+            --secondary: #6a45a8;
+            --dark: #4a2d7a;
+            --light: #f0e6ff;
+            --gray: #c7b3e6;
+            --dark-gray: #5d4a7e;
+            --success: #6ade9c;
+            --error: #de6a6a;
+            --background: #f9f5ff;
+            --card: #ffffff;
+            --text: #2d1b4a;
+            --text-light: #6a5d7e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(156, 106, 222, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        .nav-link i {
+            font-size: 0.9rem;
+        }
+
+        .main-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            line-height: 1.2;
+        }
+
+        .title-accent {
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            max-width: 700px;
+            font-size: 1.1rem;
+        }
+
+        .compiler-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .compiler-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .code-editor, .output-container {
+            background-color: var(--card);
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .editor-header, .output-header {
+            padding: 0.875rem 1.25rem;
+            background-color: var(--dark);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .editor-title, .output-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .editor-title i, .output-title i {
+            font-size: 0.9rem;
+        }
+
+        .language-selector {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .language-selector:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Size Input Container - Now positioned at top of code editor */
+        .size-input-container {
+            display: none;
+            padding: 0.75rem 1.25rem;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            align-items: center;
+            gap: 0.75rem;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .size-input-container label {
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .size-input-container input {
+            padding: 0.35rem 0.5rem;
+            border-radius: 0.35rem;
+            border: none;
+            width: 70px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .size-input-container input:focus {
+            outline: 2px solid var(--primary);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .code-area {
+            width: 100%;
+            min-height: 450px;
+            padding: 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            border: none;
+            resize: none;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            tab-size: 4;
+        }
+
+        .code-area:focus {
+            outline: none;
+        }
+
+        .output-content {
+            padding: 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            min-height: 450px;
+            background-color: #1a1a2e;
+            color: #e6e6e6;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 6px rgba(156, 106, 222, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(156, 106, 222, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: var(--gray);
+            transform: none;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: var(--card);
+            color: var(--text);
+            border: 1px solid var(--gray);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--light);
+            border-color: var(--primary);
+        }
+
+        .status {
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            margin-bottom: 2rem;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status i {
+            font-size: 1.1rem;
+        }
+
+        .status.success {
+            background-color: rgba(106, 222, 156, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(106, 222, 156, 0.3);
+            display: flex;
+        }
+
+        .status.error {
+            background-color: rgba(222, 106, 106, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(222, 106, 106, 0.3);
+            display: flex;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .feature-card {
+            background-color: var(--card);
+            border-radius: 1rem;
+            padding: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.025);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .feature-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            background: linear-gradient(135deg, rgba(156, 106, 222, 0.1), rgba(106, 68, 168, 0.1));
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.25rem;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+
+        .feature-title {
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        .feature-desc {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 5rem;
+            padding: 3rem 0 2rem;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* About Modal Styles */
+        #about-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #about-modal > div {
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        #about-modal h2 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        #about-modal h3 {
+            color: var(--primary);
+            margin: 1.5rem 0 1rem;
+        }
+
+        #about-modal p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        #about-modal ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #about-modal li {
+            margin-bottom: 0.5rem;
+        }
+
+        .team-members {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-member {
+            flex: 1;
+        }
+
+        .team-member p:first-child {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .team-member p:last-child {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        #close-about {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+            align-self: flex-start;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .nav-links {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: flex-end;
+            }
+
+            .size-input-container {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .size-input-container input {
+                width: 100%;
+            }
+
+            .team-members {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-memory"></i>
+                </div>
+                <div class="logo-text">LUTonic</div>
+            </a>
+            <div class="nav-links">
+                <a href="#" class="nav-link" id="home-link"><i class="fas fa-home"></i> Home</a>
+                <a href="https://drive.google.com/file/d/14L0bvyUjSEnwbYHSbZ6tZR79EDiSbRN6/view?usp=sharing" target="_blank" class="nav-link"><i class="fas fa-book"></i> Docs</a>
+                <a href="#" class="nav-link" id="about-link"><i class="fas fa-info-circle"></i> About</a>
+            </div>
+        </header>
+
+        <main>
+            <h1 class="main-title">PIM Architecture <span class="title-accent">Compiler</span></h1>
+            <p class="subtitle">Translate your C/C++ matrix operations into optimized Processor-in-Memory (PIM) ISA instructions with integrated memory mapping</p>
+
+            <div class="status" id="status-message"></div>
+
+            <div class="compiler-container">
+                <div class="code-editor">
+                    <div class="editor-header">
+                        <span class="editor-title"><i class="fas fa-code"></i> Source Code</span>
+                        <select id="language-selector" class="language-selector">
+                            <option value="cpp">C++</option>
+                            <option value="c">C</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Size Input Now Positioned Here (Top of Code Block) -->
+                    <div class="size-input-container" id="size-input-container">
+                        <label for="matrix-size">Matrix Size (N):</label>
+                        <input type="number" id="matrix-size" min="1" max="256" value="8">
+                    </div>
+                    
+                    <textarea id="code-input" class="code-area" spellcheck="false">void matmul(int A[8][8], int B[8][8], int C[8][8]) {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            for (int k = 0; k < 8; k++)
+                C[i][j] += A[i][k] * B[k][j];
+}</textarea>
+                </div>
+
+                <div class="output-container">
+                    <div class="output-header">
+                        <span class="output-title"><i class="fas fa-microchip"></i> Generated ISA Instructions</span>
+                    </div>
+                    <pre id="output-content" class="output-content">// Compiled output will appear here</pre>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="reset-btn" class="btn btn-secondary">
+                    <i class="fas fa-redo"></i>
+                    Reset
+                </button>
+                <button id="run-btn" class="btn btn-primary">
+                    <i class="fas fa-play"></i>
+                    Compile & Translate
+                </button>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="feature-title">High Performance</h3>
+                    <p class="feature-desc">Optimized instruction generation for PIM architectures reduces memory bottlenecks and accelerates matrix operations.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-memory"></i>
+                    </div>
+                    <h3 class="feature-title">Memory Mapping</h3>
+                    <p class="feature-desc">Integrated physical memory mapping ensures optimal data placement in the PIM architecture.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">AI/ML Focused</h3>
+                    <p class="feature-desc">Specialized for AI/ML workloads with efficient handling of matrix multiplication and related operations.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- About Modal -->
+        <div id="about-modal">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <h2>About PIM Compiler</h2>
+                    <button id="close-about">&times;</button>
+                </div>
+                <div style="margin-bottom: 1.5rem;">
+                    <p>The PIM Compiler is a specialized tool designed to translate C/C++ matrix operations into optimized Processor-in-Memory (PIM) ISA instructions with integrated memory mapping. This project focuses on accelerating AI/ML workloads by leveraging PIM architecture capabilities.</p>
+                    <h3>Key Features</h3>
+                    <ul>
+                        <li>Matrix multiplication optimization for PIM architectures</li>
+                        <li>Automatic memory mapping and allocation</li>
+                        <li>Support for both static and dynamic matrix sizes</li>
+                        <li>Tiled execution for improved performance</li>
+                        <li>Custom ISA generation for PIM cores</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Project Team</h3>
+                    <div class="team-members">
+                        <div class="team-member">
+                            <p>Kamalesh D</p>
+                            <p>22BPS1120</p>
+                        </div>
+                        <div class="team-member">
+                            <p>Mythri V.S</p>
+                            <p>22BPS1215</p>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--text-light); text-align: center;">© Compil-a-thon</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>PIM Compiler Project | Built with LLVM Framework</p>
+            <p>@ Compil-a-thon </p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('code-input');
+            const outputContent = document.getElementById('output-content');
+            const runBtn = document.getElementById('run-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const languageSelector = document.getElementById('language-selector');
+            const statusMessage = document.getElementById('status-message');
+            const sizeInputContainer = document.getElementById('size-input-container');
+            const matrixSizeInput = document.getElementById('matrix-size');
+
+            // Example starter code for different languages
+            const starterCode = {
+                'cpp': `void matmul(int A[8][8], int B[8][8], int C[8][8]) {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            for (int k = 0; k < 8; k++)
+                C[i][j] += A[i][k] * B[k][j];
+}`,
+                'c': `void matmul(int A[8][8], int B[8][8], int C[8][8]) {
+    for (int i = 0; i < 8; i++)
+        for (int j = 0; j < 8; j++)
+            for (int k = 0; k < 8; k++)
+                C[i][j] += A[i][k] * B[k][j];
+}`
+            };
+
+            // Initialize code editor with starter code
+            codeInput.value = starterCode[languageSelector.value];
+
+            // Language selector change handler
+            languageSelector.addEventListener('change', function() {
+                codeInput.value = starterCode[this.value];
+                sizeInputContainer.style.display = 'none';
+            });
+
+            // Reset button handler
+            resetBtn.addEventListener('click', function() {
+                codeInput.value = starterCode[languageSelector.value];
+                outputContent.textContent = '// Compiled output will appear here';
+                statusMessage.className = 'status';
+                statusMessage.innerHTML = '';
+                sizeInputContainer.style.display = 'none';
+            });
+
+            // Run button handler - now with actual backend integration
+            runBtn.addEventListener('click', async function() {
+                const code = codeInput.value;
+                const language = languageSelector.value;
+                
+                // Show loading state
+                runBtn.disabled = true;
+                runBtn.innerHTML = '<i class="fas fa-spinner spinner"></i> Processing...';
+                
+                // Clear previous status
+                statusMessage.className = 'status';
+                statusMessage.innerHTML = '';
+                
+                try {
+                    // Prepare compilation request
+                    const requestData = {
+                        code: code,
+                        language: language
+                    };
+                    
+                    // Include size if size input is visible
+                    if (sizeInputContainer.style.display !== 'none') {
+                        requestData.size = matrixSizeInput.value;
+                    }
+                    
+                    // Call backend API
+                    const response = await fetch('http://localhost:5000/compile', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        if (result.memory_info && result.memory_info.requires_size_input && !requestData.size) {
+                            // Show size input if needed
+                            sizeInputContainer.style.display = 'flex';
+                            statusMessage.className = 'status error';
+                            statusMessage.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please enter matrix size (N) and try again';
+                            return;
+                        }
+                        
+                        statusMessage.className = 'status success';
+                        statusMessage.innerHTML = '<i class="fas fa-check-circle"></i> Successfully compiled to PIM ISA instructions';
+                        
+                        // Show/hide size input based on backend response
+                        sizeInputContainer.style.display = (result.memory_info && result.memory_info.requires_size_input) ? 'flex' : 'none';
+                        
+                        // Format the output
+                        let output = "=== PIM Compiler Output ===\n\n";
+                        
+                        if (result.memory_info && result.memory_info.matrix_size) {
+                            output += `Matrix Size: ${result.memory_info.matrix_size}x${result.memory_info.matrix_size}\n\n`;
+                        }
+                        
+                        if (result.memory_info && result.memory_info.memory_map && Object.keys(result.memory_info.memory_map).length > 0) {
+                            output += "Memory Mapping:\n";
+                            output += JSON.stringify(result.memory_info.memory_map, null, 2) + "\n\n";
+                        }
+                        
+                        output += "Generated PIM Instructions:\n";
+                        output += result.isa_instructions;
+                        
+                        outputContent.textContent = output;
+                    } else {
+                        // Handle case where size is required
+                        if (result.requires_size_input) {
+                            sizeInputContainer.style.display = 'flex';
+                        }
+                        throw new Error(result.error || 'Compilation failed');
+                    }
+                } catch (error) {
+                    statusMessage.className = 'status error';
+                    statusMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> Error: ${error.message}`;
+                    outputContent.textContent = `// Compilation failed\n// ${error.message}`;
+                    
+                    // For development purposes, simulate response when backend isn't available
+                    if (error.message.includes('Failed to fetch')) {
+                        console.log("Backend not available, showing simulated output");
+                        outputContent.textContent = simulateCompilation(code, language);
+                        statusMessage.className = 'status success';
+                        statusMessage.innerHTML = '<i class="fas fa-check-circle"></i> Demo: Simulated PIM ISA output shown';
+                    }
+                } finally {
+                    // Reset button state
+                    runBtn.disabled = false;
+                    runBtn.innerHTML = '<i class="fas fa-play"></i> Compile & Translate';
+                }
+            });
+
+            // Function to simulate compilation when backend isn't available
+            function simulateCompilation(code, language) {
+                // Check if code uses dynamic size (N)
+                const usesDynamicSize = code.includes('[N][N]') || 
+                                      (code.includes('int N') && code.match(/\[\s*N\s*\]/));
+                
+                // Show/hide size input based on analysis
+                sizeInputContainer.style.display = usesDynamicSize ? 'flex' : 'none';
+                
+                // Get matrix size (use input value if available)
+                const size = usesDynamicSize ? 
+                    (matrixSizeInput.value || 8) : 
+                    (code.match(/\[\s*(\d+)\s*\]/) ? parseInt(code.match(/\[\s*(\d+)\s*\]/)[1]) : 8);
+                
+                // Generate mock ISA output
+                return `=== PIM Compiler Output (Simulated) ===
+
+Matrix Size: ${size}x${size}
+
+Memory Mapping:
+{
+  "banks": {
+    "A": {"bank_id": 0, "base_row": "0x000"},
+    "B": {"bank_id": 1, "base_row": "0x080"},
+    "C": {"bank_id": 2, "base_row": "0x100"}
+  }
+}
+
+Generated PIM Instructions:
+PROG 0x1F  ; Program all cores for 4-bit MAC
+; Matrix multiplication kernel (${size}x${size})
+; for i in 0..${size-1}
+; for j in 0..${size-1}
+; for k in 0..${size-1}
+
+; Compute C[0][0]
+READ 0x000  ; Dummy read to clear accumulator
+READ 0x1000  ; A[0][0]
+READ 0x2000  ; B[0][0]
+EXE MAC       ; Multiply-accumulate
+READ 0x1001  ; A[0][1]
+READ 0x2001  ; B[1][0]
+EXE MAC       ; Multiply-accumulate
+[... additional MAC operations ...]
+WRITE 0x3000 ; Store C[0][0]
+
+[... additional computation for other matrix elements ...]`;
+            }
+
+            // Navigation handlers
+            document.getElementById('home-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            const aboutLink = document.getElementById('about-link');
+            const aboutModal = document.getElementById('about-modal');
+            const closeAbout = document.getElementById('close-about');
+
+            aboutLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                aboutModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+
+            closeAbout.addEventListener('click', function() {
+                aboutModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            aboutModal.addEventListener('click', function(e) {
+                if (e.target === aboutModal) {
+                    aboutModal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

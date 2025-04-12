@@ -1,2 +1,2 @@
 # LUTonic
-Repository for the Compile-athon
+Repository for the Compile-athon 2025

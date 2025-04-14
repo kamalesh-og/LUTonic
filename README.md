@@ -1,7 +1,21 @@
 # LUTonic - The LLVM-to-pPIM Compiler for Energy-Efficient Matrix Acceleration
 
-##### *Reference Paper*
-[![Paper](https://img.shields.io/badge/Paper-Flexible%20ISA%20for%20pPIM-blue)](https://ieeexplore.ieee.org/document/9643747)  
+<table>
+  <tr>
+    <td>
+      <p><strong>📄 Reference Paper</strong></p>
+      <a href="https://ieeexplore.ieee.org/document/9643747">
+        <img src="https://img.shields.io/badge/Paper-Flexible%20ISA%20for%20pPIM-blue" alt="Paper" />
+      </a>
+    </td>
+    <td style="padding-left: 30px;">
+      <p><strong>📘 Project Documentation</strong></p>
+      <a href="https://drive.google.com/drive/u/0/folders/1mj00cEZ2JJLR6351LXnHfuNqv-8rOHub">
+        <img src="https://img.shields.io/badge/Docs-Project%20Documentation-green" alt="Docs" />
+      </a>
+    </td>
+  </tr>
+</table>
 
 This repository implements a compiler that transforms C++ matrix operations into custom ISA instructions for **LUT-based Processing-in-Memory (pPIM)** architectures, as described in *Ganguly et al. (2023)*. The toolchain enables energy-efficient execution of AI/ML workloads directly in DRAM.
 
